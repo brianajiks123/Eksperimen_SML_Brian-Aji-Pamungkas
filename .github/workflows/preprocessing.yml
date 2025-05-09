@@ -1,0 +1,42 @@
+name: Preprocess Dataset
+
+on:
+  push:
+    paths:
+      - 'Employees Stress Level_raw/**'
+      - 'preprocessing/**'
+  workflow_dispatch: {}
+  
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  preprocessing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.7'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas scikit-learn category_encoders joblib
+
+      - name: Run preprocessing script
+        run: |
+          python "preprocessing/automate_Brian Aji Pamungkas.py" \
+            --input "Employees Stress Level_raw/Employees Stress Level.csv" \
+            --output_dir "preprocessing/Employees Stress Level_preprocessing"
+
+      - name: Commit and push processed data
+        run: |
+          git config --global user.name ${{ secrets.USERNAME }}
+          git config --global user.email ${{ secrets.EMAIL }}
+          git add "preprocessing/Employees Stress Level_preprocessing/Employees Stress Level_preprocessing.csv"
+          git commit -m 'Update processed dataset'
+          git push
