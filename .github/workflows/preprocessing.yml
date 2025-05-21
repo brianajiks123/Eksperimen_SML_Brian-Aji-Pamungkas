@@ -1,0 +1,61 @@
+name: Preprocess Dataset
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  preprocessing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.7'
+      
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+    
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn joblib
+    
+      - name: Run obesity preprocessing
+        run: |
+          python "preprocessing/automate_Brian Aji Pamungkas.py" \
+            --input "Obesity_raw/Obesity.csv" \
+            --output "preprocessing" \
+            --reverse
+
+      - name: List files
+        run: ls -R .
+
+      - name: Stage artifacts
+        run: |
+          git add preprocessing/
+
+      - name: Show staged files
+        run: |
+          git status
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "${{ secrets.USERNAME }}"
+          git config --global user.email "${{ secrets.EMAIL }}"
+          git commit -m 'Add processed data & models' || echo "Nothing to commit"
+          git push
